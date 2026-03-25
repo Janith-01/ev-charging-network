@@ -1,0 +1,59 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: booking-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bookings_db
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+jwt:
+  secret: a2b4c6e8f01a3b5d7e9f1h3j5k7m9n1p2r4t6v8x0z2y4w6q8s0u2i4o6p8l0k2m4n
+
+# Feign client URLs
+feign:
+  station-service:
+    url: http://localhost:8081
+  payment-service:
+    url: http://localhost:8084
+
+# Resilience4j Circuit Breaker Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      stationServiceCB:
+        register-health-indicator: true
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        wait-duration-in-open-state: 10s
+        failure-rate-threshold: 50
+        event-consumer-buffer-size: 10
+  timelimiter:
+    instances:
+      stationServiceCB:
+        timeout-duration: 3s
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  health:
+    circuitbreakers:
+      enabled: true
