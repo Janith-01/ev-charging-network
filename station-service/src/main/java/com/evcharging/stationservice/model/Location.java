@@ -1,0 +1,12 @@
+package com.evcharging.stationservice.model;
+
+import jakarta.persistence.Embeddable;
+import lombok.*;
+
+@Embeddable
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+public class Location {
+    private String address;
+    private Double latitude;
+    private Double longitude;
+}
