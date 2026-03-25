@@ -144,3 +144,57 @@ application-secret.yml
 application-secret.properties
 secrets.yml
 auth.json
+
+### Node.js / Frontend ###
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Vite build output
+dist/
+dist-ssr/
+
+# Vite cache
+.vite/
+**/.vite/
+
+# React / general build artifacts
+build/
+.cache/
+.parcel-cache/
+
+# Package manager locks (keep one, ignore the rest)
+# Uncomment whichever you are NOT using:
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Storybook
+storybook-static/
+
+# Eslint cache
+.eslintcache
+
+# Prettier cache
+.prettiercache
+
+### Docker / Infrastructure ###
+# Local PostgreSQL data volume (docker-compose)
+postgres-data/
+
+# Docker override files (local dev only)
+docker-compose.override.yml
+
+### Runtime Logs ###
+logs/
+*.log
