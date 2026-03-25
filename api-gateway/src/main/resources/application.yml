@@ -1,0 +1,104 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+      routes:
+        - id: station-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/stations/**, /v3/api-docs/station-service
+          filters:
+            - RewritePath=/v3/api-docs/station-service, /v3/api-docs
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 20
+                key-resolver: "#{@userKeyResolver}"
+
+        - id: user-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/users/**, /v3/api-docs/user-service
+          filters:
+            - RewritePath=/v3/api-docs/user-service, /v3/api-docs
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 20
+                key-resolver: "#{@userKeyResolver}"
+
+        - id: booking-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/bookings/**, /v3/api-docs/booking-service
+          filters:
+            - RewritePath=/v3/api-docs/booking-service, /v3/api-docs
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 20
+                key-resolver: "#{@userKeyResolver}"
+
+        - id: payment-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/payments/**, /v3/api-docs/payment-service
+          filters:
+            - RewritePath=/v3/api-docs/payment-service, /v3/api-docs
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 20
+                key-resolver: "#{@userKeyResolver}"
+
+        - id: notification-service
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/notifications/**, /v3/api-docs/notification-service
+          filters:
+            - RewritePath=/v3/api-docs/notification-service, /v3/api-docs
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 20
+                key-resolver: "#{@userKeyResolver}"
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: station-service
+        url: /v3/api-docs/station-service
+      - name: user-service
+        url: /v3/api-docs/user-service
+      - name: booking-service
+        url: /v3/api-docs/booking-service
+      - name: payment-service
+        url: /v3/api-docs/payment-service
+      - name: notification-service
+        url: /v3/api-docs/notification-service
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

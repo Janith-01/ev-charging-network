@@ -1,0 +1,26 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: user-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/users_db
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+jwt:
+  secret: a2b4c6e8f01a3b5d7e9f1h3j5k7m9n1p2r4t6v8x0z2y4w6q8s0u2i4o6p8l0k2m4n
+  expiration: 86400000
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
