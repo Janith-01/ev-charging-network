@@ -1,0 +1,54 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: booking-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bookings_db
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+jwt:
+  secret: a2b4c6e8f01a3b5d7e9f1h3j5k7m9n1p2r4t6v8x0z2y4w6q8s0u2i4o6p8l0k2m4n
+
+feign:
+  station-service:
+    url: http://localhost:8081
+  payment-service:
+    url: http://localhost:8084
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 5000
+        failureRateThreshold: 50
+    instances:
+      stationService:
+        baseConfig: default
+      paymentService:
+        baseConfig: default
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,circuitbreakers
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs/booking-service
+  swagger-ui:
+    path: /swagger-ui.html

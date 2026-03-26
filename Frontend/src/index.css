@@ -55,3 +55,32 @@
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-sky-500/60;
 }
+
+/* Leaflet Overrides */
+.leaflet-container {
+  background: #0f172a !important;
+  font-family: inherit !important;
+}
+.leaflet-control-attribution {
+  display: none !important;
+}
+.custom-leaflet-icon {
+  background: none !important;
+  border: none !important;
+}
+.leaflet-popup {
+  margin-bottom: 24px !important;
+}
+.leaflet-popup-content-wrapper {
+  background: transparent !important;
+  padding: 0 !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+.leaflet-popup-content {
+  margin: 0 !important;
+  width: auto !important;
+}
+.leaflet-popup-tip-container {
+  display: none !important;
+}

@@ -7,6 +7,7 @@ import Footer from './components/Footer'
 import LoginPage from './pages/Auth/LoginPage'
 import RegisterPage from './pages/Auth/RegisterPage'
 import ProtectedRoute from './components/ProtectedRoute'
+import DashboardMap from './pages/Dashboard/DashboardMap'
 
 function LandingPage() {
   return (
@@ -31,14 +32,12 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Protected routes — placeholder for dashboard */}
+        {/* Protected routes */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">
-                Dashboard coming soon…
-              </div>
+              <DashboardMap />
             </ProtectedRoute>
           }
         />
