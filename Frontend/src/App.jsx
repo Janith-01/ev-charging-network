@@ -11,6 +11,7 @@ import DashboardMap from './pages/Dashboard/DashboardMap'
 import SessionPage from './pages/Session/SessionPage'
 import CheckoutPage from './pages/Checkout/CheckoutPage'
 import ProfilePage from './pages/Profile/ProfilePage'
+import HistoryPage from './pages/History/HistoryPage'
 
 function LandingPage() {
   return (
@@ -65,6 +66,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <ProtectedRoute>
+              <HistoryPage />
             </ProtectedRoute>
           }
         />

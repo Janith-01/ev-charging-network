@@ -144,4 +144,20 @@ export const apiService = {
     if (!res.ok) throw new Error('Failed to add vehicle')
     return res.json()
   },
+
+  async getPaymentHistory(userId) {
+    const res = await fetch(`${API_BASE}/api/payments/user/${userId}/history`, {
+      headers: authHeaders(),
+    })
+    if (!res.ok) throw new Error('Failed to load payment history')
+    return res.json()
+  },
+
+  async getUserBookings(userId) {
+    const res = await fetch(`${API_BASE}/api/bookings/user/${userId}`, {
+      headers: authHeaders(),
+    })
+    if (!res.ok) throw new Error('Failed to load user bookings')
+    return res.json()
+  },
 }

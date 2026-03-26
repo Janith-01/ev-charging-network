@@ -71,6 +71,12 @@ export default function Navbar() {
                 >
                   My Garage
                 </a>
+                <a
+                  href="/history"
+                  className="px-4 py-2 text-sm font-semibold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-all duration-200"
+                >
+                  Ledger
+                </a>
                 <button
                   onClick={() => { authService.clearToken(); window.location.href = '/' }}
                   className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white rounded-lg hover:bg-white/5 transition-all duration-200"
