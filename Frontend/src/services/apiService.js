@@ -98,4 +98,14 @@ export const apiService = {
     if (!res.ok) throw new Error('Failed to end session')
     return res.json()
   },
+
+  async createPayment(paymentData) {
+    const res = await fetch(`${API_BASE}/api/payments`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify(paymentData),
+    })
+    if (!res.ok) throw new Error('Failed to process payment')
+    return res.json()
+  },
 }

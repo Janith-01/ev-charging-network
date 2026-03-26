@@ -69,10 +69,17 @@ export default function SessionPage() {
     try {
       await apiService.endSession(bookingId, kwhConsumed.toFixed(2))
       setStatus('COMPLETED')
-      // Simulated redirect to checkout or history after a few seconds
+      // Redirect to checkout view with session data
       setTimeout(() => {
-        navigate('/dashboard')
-      }, 3000)
+        navigate(`/checkout/${bookingId}`, { 
+          state: { 
+            kwhConsumed: Number(kwhConsumed.toFixed(2)),
+            timeElapsed,
+            station,
+            booking
+          } 
+        })
+      }, 1500)
     } catch (err) {
       alert(err.message)
     }

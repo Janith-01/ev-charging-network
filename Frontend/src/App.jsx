@@ -9,6 +9,7 @@ import RegisterPage from './pages/Auth/RegisterPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import DashboardMap from './pages/Dashboard/DashboardMap'
 import SessionPage from './pages/Session/SessionPage'
+import CheckoutPage from './pages/Checkout/CheckoutPage'
 
 function LandingPage() {
   return (
@@ -47,6 +48,14 @@ function App() {
           element={
             <ProtectedRoute>
               <SessionPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout/:bookingId"
+          element={
+            <ProtectedRoute>
+              <CheckoutPage />
             </ProtectedRoute>
           }
         />
