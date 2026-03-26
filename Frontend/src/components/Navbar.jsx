@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { authService } from '../services/authService'
+import { apiService } from '../services/apiService'
 import { Bell, User, LogOut, Menu, X, Car, Map as MapIcon, FileText } from 'lucide-react'
 
 // Hook for clicking outside dropdown
@@ -41,6 +42,18 @@ export default function Navbar() {
   useOnClickOutside(profileRef, () => setProfileOpen(false))
 
   const isAuthenticated = authService.isAuthenticated()
+
+  const [profile, setProfile] = useState(null)
+  
+  useEffect(() => {
+    if (isAuthenticated) {
+      const tokenUserId = authService.getUserId()
+      const uid = !isNaN(Number(tokenUserId)) ? Number(tokenUserId) : 1
+      apiService.getProfile(uid)
+        .then(data => setProfile(data))
+        .catch(err => console.error("Could not load navbar profile", err))
+    }
+  }, [isAuthenticated])
 
   // Track scroll for glassmorphism
   useEffect(() => {
@@ -124,9 +137,13 @@ export default function Navbar() {
                     onClick={() => setProfileOpen(!profileOpen)}
                     className="flex items-center gap-2 p-1 pl-2 pr-1 rounded-full border border-slate-800 hover:bg-slate-800/50 transition-colors"
                   >
-                    <span className="text-sm font-semibold text-slate-300 ml-1">My Account</span>
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-sky-600 to-blue-500 flex items-center justify-center border border-slate-700">
-                      <User className="w-4 h-4 text-white" />
+                        <span className="text-sm font-semibold text-slate-300 ml-1">My Account</span>
+                    <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700 overflow-hidden">
+                      {profile?.profileImageUrl ? (
+                        <img src={profile.profileImageUrl} alt="Avatar" className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-4 h-4 text-slate-400" />
+                      )}
                     </div>
                   </button>
 
@@ -137,17 +154,31 @@ export default function Navbar() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute right-0 mt-3 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl py-2 overflow-hidden"
+                        className="absolute right-0 mt-3 w-64 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl overflow-hidden focus:outline-none"
                       >
-                        <a href="/profile" className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
-                          <User className="w-4 h-4" /> Profile Details
-                        </a>
-                        <button 
-                          onClick={handleLogout}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-colors text-left"
-                        >
-                          <LogOut className="w-4 h-4" /> Logout
-                        </button>
+                        <div className="px-5 py-4 flex flex-col items-center text-center bg-slate-800/20">
+                           <div className="w-16 h-16 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center overflow-hidden mb-3">
+                              {profile?.profileImageUrl ? (
+                                 <img src={profile.profileImageUrl} alt="Avatar" className="w-full h-full object-cover" />
+                              ) : (
+                                 <User className="w-8 h-8 text-slate-400" />
+                              )}
+                           </div>
+                           <p className="text-sm font-bold text-white truncate w-full">{profile && (profile.firstName || profile.lastName) ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim() : 'Guest User'}</p>
+                           <p className="text-xs text-slate-400 truncate w-full mt-0.5">{authService.getUserPayload()?.sub || 'user@example.com'}</p>
+                        </div>
+                        <hr className="border-slate-800" />
+                        <div className="py-2">
+                          <a href="/profile" className="flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                            <User className="w-4 h-4 text-slate-400" /> Edit Profile
+                          </a>
+                          <button 
+                            onClick={handleLogout}
+                            className="w-full flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors text-left"
+                          >
+                            <LogOut className="w-4 h-4" /> Logout
+                          </button>
+                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
