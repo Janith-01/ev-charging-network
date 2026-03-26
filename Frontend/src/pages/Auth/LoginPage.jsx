@@ -102,7 +102,7 @@ export default function LoginPage() {
       const data = await authService.login({ email: form.email, password: form.password })
       authService.saveToken(data.token)
       addToast('Welcome back! Redirecting...', 'success')
-      setTimeout(() => navigate('/'), 1200)
+      setTimeout(() => navigate('/dashboard'), 1200)
     } catch (err) {
       addToast(err.message || 'Login failed. Please try again.', 'error')
     } finally {
