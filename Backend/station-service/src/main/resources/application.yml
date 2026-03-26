@@ -23,3 +23,6 @@ jwt:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+
+openchargemap:
+  api-key: e0ecfd81-2250-4f0f-8ed7-64d72d11fe25

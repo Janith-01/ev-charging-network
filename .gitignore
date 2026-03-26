@@ -140,6 +140,7 @@ $RECYCLE.BIN/
 .env.*
 !.env.example
 *.local
+application.yml
 application-secret.yml
 application-secret.properties
 secrets.yml
