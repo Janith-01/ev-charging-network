@@ -51,4 +51,25 @@ export const apiService = {
     if (!res.ok) throw new Error('Failed to mark notification')
     return res.json()
   },
+
+  async getStationById(stationId) {
+    const res = await fetch(`${API_BASE}/api/stations/${stationId}`, {
+      headers: authHeaders(),
+    })
+    if (!res.ok) throw new Error('Failed to load station details')
+    return res.json()
+  },
+
+  async createBooking(bookingData) {
+    const res = await fetch(`${API_BASE}/api/bookings`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify(bookingData),
+    })
+    if (!res.ok) {
+      const err = await res.text()
+      throw new Error(err || 'Failed to create booking')
+    }
+    return res.json()
+  },
 }

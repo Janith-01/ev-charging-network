@@ -54,4 +54,22 @@ export const authService = {
   isAuthenticated() {
     return !!localStorage.getItem(TOKEN_KEY)
   },
+
+  /** Decode JWT to extract user ID and role */
+  getUserPayload() {
+    const token = this.getToken()
+    if (!token) return null
+    try {
+      const payload = token.split('.')[1]
+      return JSON.parse(atob(payload))
+    } catch (e) {
+      return null
+    }
+  },
+
+  getUserId() {
+    const payload = this.getUserPayload()
+    // Depending on Spring Security schema, ID might be 'userId', 'sub', or 'id'
+    return payload ? (payload.userId || payload.sub || payload.id) : null
+  }
 }

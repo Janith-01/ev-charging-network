@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MapPin, BatteryCharging, Navigation, Search, Filter, X, Zap, Plug } from 'lucide-react'
 import { apiService } from '../../services/apiService'
+import BookingModal from '../../components/BookingModal'
 
 // Custom DivIcons for our map markers
 function createMapIcon(type) {
@@ -59,6 +60,7 @@ export default function DashboardMap() {
   const [showFilters, setShowFilters] = useState(false)
   const [availableOnly, setAvailableOnly] = useState(false)
   const [selectedConnectors, setSelectedConnectors] = useState([...ALL_CONNECTORS])
+  const [bookingStationId, setBookingStationId] = useState(null)
   
   useEffect(() => {
     // Get user location
@@ -300,9 +302,12 @@ export default function DashboardMap() {
                         ))}
                       </div>
 
-                      <button className="w-full mt-4 py-2.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-white font-medium text-sm transition-colors flex items-center justify-center gap-2">
+                      <button 
+                        onClick={() => setBookingStationId(station.id)}
+                        className="w-full mt-4 py-2.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-white font-medium text-sm transition-colors flex items-center justify-center gap-2"
+                      >
                         <Navigation className="w-4 h-4" />
-                        View Details
+                        View Details & Book
                       </button>
                     </div>
                   </div>
@@ -327,6 +332,15 @@ export default function DashboardMap() {
         </div>
       </div>
 
+      <BookingModal
+        isOpen={!!bookingStationId}
+        stationId={bookingStationId}
+        onClose={() => setBookingStationId(null)}
+        onBookingSuccess={() => {
+           setBookingStationId(null)
+           fetchStations(userLocation[0], userLocation[1]) // refresh map slots
+        }}
+      />
     </div>
   )
 }
