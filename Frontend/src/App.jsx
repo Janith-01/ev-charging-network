@@ -10,6 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import DashboardMap from './pages/Dashboard/DashboardMap'
 import SessionPage from './pages/Session/SessionPage'
 import CheckoutPage from './pages/Checkout/CheckoutPage'
+import ProfilePage from './pages/Profile/ProfilePage'
 
 function LandingPage() {
   return (
@@ -56,6 +57,14 @@ function App() {
           element={
             <ProtectedRoute>
               <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           }
         />

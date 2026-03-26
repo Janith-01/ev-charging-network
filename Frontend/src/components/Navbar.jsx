@@ -63,7 +63,13 @@ export default function Navbar() {
                   href="/dashboard"
                   className="px-4 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:from-sky-400 hover:to-blue-500 shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all duration-200"
                 >
-                  Dashboard
+                  Map
+                </a>
+                <a
+                  href="/profile"
+                  className="px-4 py-2 text-sm font-semibold rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 transition-all duration-200"
+                >
+                  My Garage
                 </a>
                 <button
                   onClick={() => { authService.clearToken(); window.location.href = '/' }}

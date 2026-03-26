@@ -108,4 +108,40 @@ export const apiService = {
     if (!res.ok) throw new Error('Failed to process payment')
     return res.json()
   },
+
+  async getProfile(userId) {
+    const res = await fetch(`${API_BASE}/api/users/${userId}`, {
+      headers: authHeaders(),
+    })
+    if (!res.ok) throw new Error('Failed to load profile')
+    return res.json()
+  },
+
+  async updateProfile(userId, data) {
+    const res = await fetch(`${API_BASE}/api/users/${userId}`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) throw new Error('Failed to update profile')
+    return res.text()
+  },
+
+  async getUserVehicles(userId) {
+    const res = await fetch(`${API_BASE}/api/users/${userId}/vehicles`, {
+      headers: authHeaders(),
+    })
+    if (!res.ok) return []
+    return res.json()
+  },
+
+  async addVehicle(userId, vehicleData) {
+    const res = await fetch(`${API_BASE}/api/users/${userId}/vehicles`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify(vehicleData),
+    })
+    if (!res.ok) throw new Error('Failed to add vehicle')
+    return res.json()
+  },
 }

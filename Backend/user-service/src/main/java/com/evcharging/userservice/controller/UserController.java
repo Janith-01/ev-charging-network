@@ -18,6 +18,7 @@ public class UserController {
 
     private final ProfileRepository profileRepository;
     private final VehicleRepository vehicleRepository;
+    private final com.evcharging.userservice.repository.UserRepository userRepository;
 
     @GetMapping("/{id}")
     public ResponseEntity<ProfileDto> getProfile(@PathVariable Long id) {
@@ -44,6 +45,22 @@ public class UserController {
     public ResponseEntity<List<Vehicle>> getUserVehicles(@PathVariable Long id) {
         List<Vehicle> vehicles = vehicleRepository.findByUserId(id);
         return ResponseEntity.ok(vehicles);
+    }
+
+    @PostMapping("/{id}/vehicles")
+    public ResponseEntity<Vehicle> addVehicle(@PathVariable Long id, @RequestBody Vehicle vehicleDto) {
+        com.evcharging.userservice.model.User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        Vehicle vehicle = Vehicle.builder()
+                .user(user)
+                .make(vehicleDto.getMake())
+                .model(vehicleDto.getModel())
+                .batteryCapacity(vehicleDto.getBatteryCapacity())
+                .connectorType(vehicleDto.getConnectorType())
+                .build();
+                
+        return ResponseEntity.ok(vehicleRepository.save(vehicle));
     }
     
     private ProfileDto mapToDto(Profile profile) {
