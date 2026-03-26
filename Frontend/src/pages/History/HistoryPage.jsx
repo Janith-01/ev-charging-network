@@ -7,7 +7,9 @@ import { useNavigate } from 'react-router-dom'
 
 export default function HistoryPage() {
   const navigate = useNavigate()
-  const userId = authService.getUserId() || 1
+  
+  const tokenUserId = authService.getUserId()
+  const userId = !isNaN(Number(tokenUserId)) ? Number(tokenUserId) : 1
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)

@@ -7,7 +7,9 @@ import { useNavigate } from 'react-router-dom'
 
 export default function ProfilePage() {
   const navigate = useNavigate()
-  const userId = authService.getUserId() || 1
+  
+  const tokenUserId = authService.getUserId()
+  const userId = !isNaN(Number(tokenUserId)) ? Number(tokenUserId) : 1
 
   const [activeTab, setActiveTab] = useState('personal') // 'personal' or 'vehicles'
   
@@ -171,7 +173,7 @@ export default function ProfilePage() {
                       <input 
                         type="text" 
                         required
-                        value={profile.firstName} 
+                        value={profile?.firstName || ''} 
                         onChange={(e) => setProfile({...profile, firstName: e.target.value})}
                         className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-500/50" 
                       />
@@ -181,7 +183,7 @@ export default function ProfilePage() {
                       <input 
                         type="text" 
                         required
-                        value={profile.lastName} 
+                        value={profile?.lastName || ''} 
                         onChange={(e) => setProfile({...profile, lastName: e.target.value})}
                         className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-500/50" 
                       />
@@ -194,7 +196,7 @@ export default function ProfilePage() {
                       <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                       <input 
                         type="tel" 
-                        value={profile.phone} 
+                        value={profile?.phone || ''} 
                         onChange={(e) => setProfile({...profile, phone: e.target.value})}
                         className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-500/50" 
                       />

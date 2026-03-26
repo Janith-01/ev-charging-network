@@ -64,9 +64,12 @@ export default function CheckoutPage() {
     setError(null)
 
     try {
+      const tokenUserId = authService.getUserId()
+      const numericUserId = !isNaN(Number(tokenUserId)) ? Number(tokenUserId) : 1
+      
       const payload = {
         bookingId: parseInt(bookingId),
-        userId: sessionData.booking.userId || authService.getUserId() || 1,
+        userId: sessionData.booking.userId || numericUserId,
         stationId: sessionData.station.id,
         amount: Number((sessionData.kwhConsumed * sessionData.station.pricingPerKwh).toFixed(2)),
         kwhConsumed: sessionData.kwhConsumed,
