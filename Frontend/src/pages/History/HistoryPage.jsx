@@ -4,6 +4,7 @@ import { FileText, Search, CreditCard, Filter, CheckCircle2, XCircle, Clock, Che
 import { apiService } from '../../services/apiService'
 import { authService } from '../../services/authService'
 import { useNavigate } from 'react-router-dom'
+import { formatLKR } from '../../utils/currency'
 
 export default function HistoryPage() {
   const navigate = useNavigate()
@@ -216,7 +217,7 @@ export default function HistoryPage() {
                               {(row.totalKwh || row.kwhConsumed || 0).toFixed(2)}
                            </td>
                            <td className="px-6 py-4 border-l border-slate-800/50 font-bold text-white text-right bg-slate-800/10">
-                              ${(row.amount || 0).toFixed(2)}
+                              {formatLKR(row.amount || 0)}
                            </td>
                            <td className="px-6 py-4 border-l border-slate-800/50 text-center">
                               {renderStatus(row.status)}

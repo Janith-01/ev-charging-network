@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, Lock, CreditCard, ChevronLeft, Zap, FileText, Calendar } from 'lucide-react'
 import { apiService } from '../../services/apiService'
 import { authService } from '../../services/authService'
+import { formatLKR } from '../../utils/currency'
 
 export default function CheckoutPage() {
   const { bookingId } = useParams()
@@ -217,7 +218,7 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-400 font-medium">Rate / kWh</span>
-                    <span className="font-bold text-sky-400">${sessionData?.station?.pricingPerKwh.toFixed(2)}</span>
+                    <span className="font-bold text-sky-400">{formatLKR(sessionData?.station?.pricingPerKwh)}</span>
                   </div>
                 </div>
 
@@ -227,7 +228,7 @@ export default function CheckoutPage() {
             <div className="mt-10">
               <div className="flex justify-between items-end">
                 <span className="text-slate-400 font-medium text-lg">Total Amount</span>
-                <span className="text-4xl font-black text-emerald-400">${invoiceAmount}</span>
+                <span className="text-4xl font-black text-emerald-400">{formatLKR(invoiceAmount)}</span>
               </div>
             </div>
           </div>
@@ -312,7 +313,7 @@ export default function CheckoutPage() {
                   </>
                 ) : (
                   <>
-                    <Lock className="w-4 h-4" /> Pay ${invoiceAmount}
+                    <Lock className="w-4 h-4" /> Pay {formatLKR(invoiceAmount)}
                   </>
                 )}
               </button>

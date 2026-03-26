@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { BatteryCharging, Zap, Clock, CreditCard, Square, Play, CheckCircle2, ChevronLeft } from 'lucide-react'
+import { Zap, Play, Square, AlertCircle, ChevronLeft, MapPin, BatteryCharging, Clock, DollarSign, Activity } from 'lucide-react'
 import { apiService } from '../../services/apiService'
+import { authService } from '../../services/authService'
+import { formatLKR } from '../../utils/currency'
 
 export default function SessionPage() {
   const { bookingId } = useParams()
@@ -201,11 +203,13 @@ export default function SessionPage() {
                 {formatTime(timeElapsed)}
               </span>
             </div>
-            <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-center">
-              <CreditCard className="w-5 h-5 text-slate-500 mb-2" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Estimated</span>
+            <div className={`p-4 rounded-2xl flex flex-col justify-between ${status === 'CHARGING' ? 'bg-emerald-500/10' : 'bg-slate-800/30'}`}>
+              <div className="flex items-center gap-2 mb-2">
+                <DollarSign className={`w-4 h-4 ${status === 'CHARGING' ? 'text-emerald-400' : 'text-slate-500'}`} />
+                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Estimated Cost</span>
+              </div>
               <span className={`text-xl font-bold font-mono ${status === 'CHARGING' ? 'text-emerald-400' : 'text-slate-300'}`}>
-                ${estimatedCost}
+                {formatLKR(estimatedCost)}
               </span>
             </div>
           </div>

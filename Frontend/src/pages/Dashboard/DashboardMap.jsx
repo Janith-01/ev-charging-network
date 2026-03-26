@@ -8,6 +8,7 @@ import { MapPin, BatteryCharging, Navigation, Search, Filter, X, Zap, Plug } fro
 import { apiService } from '../../services/apiService'
 import BookingModal from '../../components/BookingModal'
 import Navbar from '../../components/Navbar'
+import { formatLKR } from '../../utils/currency'
 
 // Custom DivIcons for our map markers
 function createMapIcon(type) {
@@ -289,9 +290,9 @@ export default function DashboardMap() {
                     </div>
                     
                     <div className="p-4 space-y-3 bg-slate-900">
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-slate-400">Pricing</span>
-                        <span className="font-semibold text-emerald-400">${station.pricingPerKwh}/kWh</span>
+                      <div className="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between text-sm">
+                        <span className="text-slate-400 font-medium">Pricing</span>
+                        <span className="font-semibold text-emerald-400">{formatLKR(station.pricingPerKwh)} / kWh</span>
                       </div>
                       
                       <div className="flex justify-between items-center text-sm">

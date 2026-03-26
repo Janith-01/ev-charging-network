@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, MapPin, Zap, Calendar, Plug, CheckCircle2 } from 'lucide-react'
+import { X, MapPin, Zap, Plug, Navigation, CheckCircle2 } from 'lucide-react'
 import { apiService } from '../services/apiService'
 import { authService } from '../services/authService'
+import { formatLKR } from '../utils/currency'
 
 export default function BookingModal({ stationId, isOpen, onClose, onBookingSuccess }) {
   const [station, setStation] = useState(null)
@@ -150,8 +151,10 @@ export default function BookingModal({ stationId, isOpen, onClose, onBookingSucc
                   {/* Station Specs */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="p-4 bg-slate-800/40 rounded-xl border border-slate-700/50">
-                      <p className="text-xs text-slate-400 mb-1 uppercase tracking-wider font-semibold">Pricing</p>
-                      <p className="text-lg font-bold text-emerald-400">${station.pricingPerKwh}<span className="text-sm font-medium text-slate-500">/kWh</span></p>
+                      <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-slate-400">Rate Energy</span>
+                      <p className="text-lg font-bold text-emerald-400">{formatLKR(station.pricingPerKwh)}<span className="text-sm font-medium text-slate-500"> / kWh</span></p>
+                    </div>
                     </div>
                     <div className="p-4 bg-slate-800/40 rounded-xl border border-slate-700/50">
                       <p className="text-xs text-slate-400 mb-1 uppercase tracking-wider font-semibold">Availability</p>

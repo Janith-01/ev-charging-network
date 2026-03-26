@@ -31,7 +31,7 @@ public class OpenChargeMapSyncService implements CommandLineRunner {
     @Value("${openchargemap.api-key:e0ecfd81-2250-4f0f-8ed7-64d72d11fe25}")
     private String apiKey;
 
-    private static final String OCM_API_URL = "https://api.openchargemap.io/v3/poi?countrycode=LK&maxresults=20";
+    private static final String OCM_API_URL = "https://api.openchargemap.io/v3/poi?countrycode=LK&maxresults=1000";
 
     @Override
     public void run(String... args) {
