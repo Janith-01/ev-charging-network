@@ -60,6 +60,14 @@ export const apiService = {
     return res.json()
   },
 
+  async getBookingById(bookingId) {
+    const res = await fetch(`${API_BASE}/api/bookings/${bookingId}`, {
+      headers: authHeaders(),
+    })
+    if (!res.ok) throw new Error('Failed to load booking details')
+    return res.json()
+  },
+
   async createBooking(bookingData) {
     const res = await fetch(`${API_BASE}/api/bookings`, {
       method: 'POST',
@@ -70,6 +78,24 @@ export const apiService = {
       const err = await res.text()
       throw new Error(err || 'Failed to create booking')
     }
+    return res.json()
+  },
+
+  async startSession(bookingId) {
+    const res = await fetch(`${API_BASE}/api/bookings/${bookingId}/start`, {
+      method: 'PUT',
+      headers: authHeaders(),
+    })
+    if (!res.ok) throw new Error('Failed to start session')
+    return res.json()
+  },
+
+  async endSession(bookingId, kwhConsumed) {
+    const res = await fetch(`${API_BASE}/api/bookings/${bookingId}/end?kwhConsumed=${kwhConsumed}`, {
+      method: 'PUT',
+      headers: authHeaders(),
+    })
+    if (!res.ok) throw new Error('Failed to end session')
     return res.json()
   },
 }

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MapPin, BatteryCharging, Navigation, Search, Filter, X, Zap, Plug } from 'lucide-react'
 import { apiService } from '../../services/apiService'
@@ -50,6 +51,8 @@ function MapController({ center }) {
 const ALL_CONNECTORS = ['TYPE_1', 'TYPE_2', 'CCS', 'CHADEMO']
 
 export default function DashboardMap() {
+  const navigate = useNavigate()
+  
   const [stations, setStations] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -336,9 +339,9 @@ export default function DashboardMap() {
         isOpen={!!bookingStationId}
         stationId={bookingStationId}
         onClose={() => setBookingStationId(null)}
-        onBookingSuccess={() => {
+        onBookingSuccess={(bookingId) => {
            setBookingStationId(null)
-           fetchStations(userLocation[0], userLocation[1]) // refresh map slots
+           navigate(`/session/${bookingId}`)
         }}
       />
     </div>

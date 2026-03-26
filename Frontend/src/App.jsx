@@ -8,6 +8,7 @@ import LoginPage from './pages/Auth/LoginPage'
 import RegisterPage from './pages/Auth/RegisterPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import DashboardMap from './pages/Dashboard/DashboardMap'
+import SessionPage from './pages/Session/SessionPage'
 
 function LandingPage() {
   return (
@@ -38,6 +39,14 @@ function App() {
           element={
             <ProtectedRoute>
               <DashboardMap />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/session/:bookingId"
+          element={
+            <ProtectedRoute>
+              <SessionPage />
             </ProtectedRoute>
           }
         />

@@ -49,11 +49,11 @@ export default function BookingModal({ stationId, isOpen, onClose, onBookingSucc
         date: selectedDate, // expected format 'YYYY-MM-DD'
       }
       
-      await apiService.createBooking(payload)
+      const data = await apiService.createBooking(payload)
       setSuccess(true)
       
       if (onBookingSuccess) {
-         setTimeout(onBookingSuccess, 2000)
+         setTimeout(() => onBookingSuccess(data.id), 2000)
       }
     } catch (err) {
       setError(err.message || 'Failed to confirm booking. Please try again.')
