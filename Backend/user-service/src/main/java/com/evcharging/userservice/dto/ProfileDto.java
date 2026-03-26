@@ -5,5 +5,6 @@ import java.util.List;
     private String firstName; 
     private String lastName; 
     private String phone;
+    private String profileImageUrl;
     private List<Long> favoriteStationIds;
 }

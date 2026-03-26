@@ -8,6 +8,8 @@ import com.evcharging.userservice.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.Base64;
 
 import java.util.List;
 
@@ -62,6 +64,26 @@ public class UserController {
                 
         return ResponseEntity.ok(vehicleRepository.save(vehicle));
     }
+
+    @PostMapping("/{id}/avatar")
+    public ResponseEntity<com.evcharging.userservice.model.User> uploadAvatar(
+            @PathVariable Long id, 
+            @RequestParam("file") MultipartFile file) {
+        try {
+            com.evcharging.userservice.model.User user = userRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            
+            String contentType = file.getContentType() != null ? file.getContentType() : "image/jpeg";
+            String base64Image = "data:" + contentType + ";base64," + 
+                    Base64.getEncoder().encodeToString(file.getBytes());
+            
+            user.setProfileImageUrl(base64Image);
+            com.evcharging.userservice.model.User updatedUser = userRepository.save(user);
+            return ResponseEntity.ok(updatedUser);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to upload avatar: " + e.getMessage());
+        }
+    }
     
     private ProfileDto mapToDto(Profile profile) {
         ProfileDto dto = new ProfileDto();
@@ -69,6 +91,9 @@ public class UserController {
         dto.setLastName(profile.getLastName());
         dto.setPhone(profile.getPhone());
         dto.setFavoriteStationIds(profile.getFavoriteStationIds());
+        if (profile.getUser() != null) {
+            dto.setProfileImageUrl(profile.getUser().getProfileImageUrl());
+        }
         return dto;
     }
 }
