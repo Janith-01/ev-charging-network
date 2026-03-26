@@ -127,6 +127,22 @@ export const apiService = {
     return res.text()
   },
 
+  async uploadAvatar(userId, file) {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const headers = authHeaders()
+    delete headers['Content-Type'] // Let the browser set the boundary for multipart/form-data
+
+    const res = await fetch(`${API_BASE}/api/users/${userId}/avatar`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    })
+    if (!res.ok) throw new Error('Failed to upload avatar')
+    return res.json()
+  },
+
   async getUserVehicles(userId) {
     const res = await fetch(`${API_BASE}/api/users/${userId}/vehicles`, {
       headers: authHeaders(),

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { User, Car, Mail, Phone, Settings, Save, Plus, X, BatteryCharging, Plug, ChevronLeft } from 'lucide-react'
+import { User, Car, Mail, Phone, Settings, Save, Plus, X, BatteryCharging, Plug, ChevronLeft, Camera } from 'lucide-react'
 import { apiService } from '../../services/apiService'
 import { authService } from '../../services/authService'
 import { useNavigate } from 'react-router-dom'
@@ -20,6 +20,8 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
   const [successMsg, setSuccessMsg] = useState('')
+  const [avatarPreview, setAvatarPreview] = useState(null)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -58,6 +60,30 @@ export default function ProfilePage() {
       setError(err.message || 'Failed to update profile')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    // Preview
+    const reader = new FileReader()
+    reader.onload = (ev) => setAvatarPreview(ev.target.result)
+    reader.readAsDataURL(file)
+
+    setUploadingAvatar(true)
+    setError(null)
+    setSuccessMsg('')
+    try {
+      const updatedUser = await apiService.uploadAvatar(userId, file)
+      setProfile(prev => ({ ...prev, profileImageUrl: updatedUser.profileImageUrl }))
+      setSuccessMsg('Profile picture updated!')
+      setTimeout(() => setSuccessMsg(''), 3000)
+    } catch (err) {
+      setError('Failed to upload avatar')
+    } finally {
+      setUploadingAvatar(false)
     }
   }
 
@@ -161,9 +187,36 @@ export default function ProfilePage() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-white">Personal Information</h2>
-                  <p className="text-sm text-slate-400 mt-1">Update your contact details and account information.</p>
+                <div className="flex items-center gap-6 mb-8">
+                  <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border border-slate-700 bg-slate-800 flex items-center justify-center shrink-0 group shadow-xl">
+                    {uploadingAvatar && (
+                      <div className="absolute inset-0 z-20 bg-slate-950/80 flex items-center justify-center">
+                        <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    )}
+                    
+                    {avatarPreview || profile?.profileImageUrl ? (
+                       <img src={avatarPreview || profile.profileImageUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                       <User className="w-10 h-10 text-slate-500" />
+                    )}
+
+                    <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer">
+                      <Camera className="w-6 h-6 text-white" />
+                    </div>
+                    
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleAvatarUpload} 
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                      title="Upload Avatar"
+                    />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1">Personal Information</h2>
+                    <p className="text-sm text-slate-400">Update your contact details and account information.</p>
+                  </div>
                 </div>
 
                 <form onSubmit={handleProfileUpdate} className="space-y-6">
