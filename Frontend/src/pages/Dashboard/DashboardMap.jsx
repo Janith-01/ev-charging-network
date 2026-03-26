@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { MapPin, BatteryCharging, Navigation, Search, Filter, X, Zap, Plug } from 'lucide-react'
 import { apiService } from '../../services/apiService'
 import BookingModal from '../../components/BookingModal'
+import Navbar from '../../components/Navbar'
 
 // Custom DivIcons for our map markers
 function createMapIcon(type) {
@@ -123,7 +124,8 @@ export default function DashboardMap() {
   }, [stations, availableOnly, selectedConnectors])
 
   return (
-    <div className="relative w-full h-screen bg-slate-950 overflow-hidden flex flex-col lg:flex-row">
+    <div className="relative w-full h-screen bg-slate-950 pt-16 md:pt-20 overflow-hidden flex flex-col lg:flex-row">
+      <Navbar />
       
       {/* ── Desktop Sidebar / Mobile overlay ── */}
       <AnimatePresence>
