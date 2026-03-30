@@ -16,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class UserController {
 
     private final ProfileRepository profileRepository;

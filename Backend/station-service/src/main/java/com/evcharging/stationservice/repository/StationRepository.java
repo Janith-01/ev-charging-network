@@ -6,12 +6,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 
 import java.util.List;
 
 public interface StationRepository extends JpaRepository<Station, Long> {
 
-    Page<Station> findAll(Pageable pageable);
+    @NonNull
+    Page<Station> findAll(@NonNull Pageable pageable);
 
     /**
      * Haversine formula to find stations within a given radius (in km).

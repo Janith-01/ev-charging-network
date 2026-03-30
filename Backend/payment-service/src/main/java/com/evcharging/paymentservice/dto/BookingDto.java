@@ -3,7 +3,6 @@ package com.evcharging.paymentservice.dto;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 /**
  * Mirrors the BookingResponse + Session from booking-service

@@ -47,3 +47,97 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: ev-charging-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  station-service:
+    build: ./Backend/station-service
+    container_name: ev-charging-station
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/stations_db
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  user-service:
+    build: ./Backend/user-service
+    container_name: ev-charging-user
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/users_db
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  booking-service:
+    build: ./Backend/booking-service
+    container_name: ev-charging-booking
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/bookings_db
+      FEIGN_STATION_SERVICE_URL: http://station-service:8081
+      FEIGN_PAYMENT_SERVICE_URL: http://payment-service:8084
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  payment-service:
+    build: ./Backend/payment-service
+    container_name: ev-charging-payment
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/payments_db
+      FEIGN_BOOKING_SERVICE_URL: http://booking-service:8083
+    ports:
+      - "8084:8084"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  notification-service:
+    build: ./Backend/notification-service
+    container_name: ev-charging-notification
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/notif_db
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_MAIL_HOST: mailhog
+    ports:
+      - "8085:8085"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  api-gateway:
+    build: ./Backend/api-gateway
+    container_name: ev-charging-gateway
+    restart: unless-stopped
+    environment:
+      SPRING_CLOUD_GATEWAY_ROUTES_0_URI: http://station-service:8081
+      SPRING_CLOUD_GATEWAY_ROUTES_1_URI: http://user-service:8082
+      SPRING_CLOUD_GATEWAY_ROUTES_2_URI: http://booking-service:8083
+      SPRING_CLOUD_GATEWAY_ROUTES_3_URI: http://payment-service:8084
+      SPRING_CLOUD_GATEWAY_ROUTES_4_URI: http://notification-service:8085
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./Frontend
+    container_name: ev-charging-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
