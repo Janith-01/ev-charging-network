@@ -6,10 +6,13 @@ import com.evcharging.notificationservice.model.Notification;
 import com.evcharging.notificationservice.repository.NotificationRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +23,7 @@ import java.util.List;
 @Slf4j
 @SuppressWarnings("null")
 @Tag(name = "Notifications", description = "Notification endpoints for the React frontend")
+@Validated
 public class NotificationController {
 
     private final NotificationRepository notificationRepository;
@@ -33,7 +37,7 @@ public class NotificationController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get notification by id")
-    public ResponseEntity<Notification> getNotificationById(@PathVariable Long id) {
+    public ResponseEntity<Notification> getNotificationById(@PathVariable @Positive(message = "Notification id must be positive") Long id) {
         Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Notification not found with id: " + id));
         return ResponseEntity.ok(notification);
@@ -41,14 +45,14 @@ public class NotificationController {
 
     @GetMapping("/user/{userId}")
     @Operation(summary = "Get all notifications for a user, newest first")
-    public ResponseEntity<List<Notification>> getUserNotifications(@PathVariable Long userId) {
+    public ResponseEntity<List<Notification>> getUserNotifications(@PathVariable @Positive(message = "User id must be positive") Long userId) {
         List<Notification> notifications = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
         return ResponseEntity.ok(notifications);
     }
 
     @PostMapping
     @Operation(summary = "Create notification directly")
-    public ResponseEntity<Notification> createNotification(@RequestBody Notification request) {
+    public ResponseEntity<Notification> createNotification(@Valid @RequestBody Notification request) {
         Notification notification = Notification.builder()
                 .userId(request.getUserId())
                 .message(request.getMessage())
@@ -62,8 +66,8 @@ public class NotificationController {
     @PutMapping("/{id}")
     @Operation(summary = "Update notification")
     public ResponseEntity<Notification> updateNotification(
-            @PathVariable Long id,
-            @RequestBody Notification request
+            @PathVariable @Positive(message = "Notification id must be positive") Long id,
+            @Valid @RequestBody Notification request
     ) {
         Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Notification not found with id: " + id));
@@ -80,7 +84,7 @@ public class NotificationController {
 
     @PutMapping("/{id}/read")
     @Operation(summary = "Mark a notification as read")
-    public ResponseEntity<Notification> markAsRead(@PathVariable Long id) {
+    public ResponseEntity<Notification> markAsRead(@PathVariable @Positive(message = "Notification id must be positive") Long id) {
         Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Notification not found with id: " + id));
 
@@ -93,7 +97,7 @@ public class NotificationController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete notification")
-    public ResponseEntity<String> deleteNotification(@PathVariable Long id) {
+    public ResponseEntity<String> deleteNotification(@PathVariable @Positive(message = "Notification id must be positive") Long id) {
         Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Notification not found with id: " + id));
 
@@ -103,7 +107,7 @@ public class NotificationController {
 
     @PostMapping("/test-send")
     @Operation(summary = "Manually publish a notification event to RabbitMQ (for Swagger testing)")
-    public ResponseEntity<String> testSend(@RequestBody NotificationEvent event) {
+    public ResponseEntity<String> testSend(@Valid @RequestBody NotificationEvent event) {
         String routingKey = "notification." + event.getType().name().toLowerCase();
 
         rabbitTemplate.convertAndSend(

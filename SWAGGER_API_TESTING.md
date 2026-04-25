@@ -25,6 +25,8 @@ Optional per-service Swagger:
 2. Call `POST /api/users/login` and copy the returned token.
 3. Click **Authorize** in Swagger and paste the token.
    - Use raw token value (no `Bearer ` prefix).
+4. Re-login and refresh the token if it is older than 24 hours.
+   - Tokens in this project expire after 24 hours (`jwt.expiration = 86400000`).
 
 ---
 
@@ -328,7 +330,8 @@ Base path: `/api/notifications`
 ## 8. Useful notes during demo
 
 - If register returns `400 Email already registered`, use a new email or login directly.
-- If secured endpoints return `401`, re-login and re-Authorize token in Swagger.
+- If secured endpoints return `401`, your JWT is invalid or expired. Re-login and re-Authorize.
+- If secured endpoints return `403`, check role requirements (for example admin-only station creation).
 - If station create returns `403`, use an admin JWT for that endpoint.
 - For a clean database reset:
 

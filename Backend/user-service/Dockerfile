@@ -1,11 +1,12 @@
+# syntax=docker/dockerfile:1.7
 FROM maven:3.9.6-eclipse-temurin-17-alpine AS builder
 WORKDIR /app
 
 COPY pom.xml ./
-RUN mvn -B -DskipTests dependency:go-offline
+RUN --mount=type=cache,target=/root/.m2 mvn -B -DskipTests dependency:go-offline
 
 COPY src ./src
-RUN mvn -B -DskipTests clean package
+RUN --mount=type=cache,target=/root/.m2 mvn -B -DskipTests clean package
 
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app

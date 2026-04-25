@@ -8,8 +8,11 @@ import com.evcharging.userservice.repository.AuthTokenRepository;
 import com.evcharging.userservice.repository.ProfileRepository;
 import com.evcharging.userservice.repository.UserRepository;
 import com.evcharging.userservice.repository.VehicleRepository;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,6 +24,7 @@ import java.util.List;
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 @SuppressWarnings("null")
+@Validated
 public class UserController {
 
     private final ProfileRepository profileRepository;
@@ -37,14 +41,17 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProfileDto> getProfile(@PathVariable Long id) {
+    public ResponseEntity<ProfileDto> getProfile(@PathVariable @Positive(message = "User id must be positive") Long id) {
         Profile profile = profileRepository.findByUserId(id)
                 .orElseThrow(() -> new RuntimeException("Profile not found"));
         return ResponseEntity.ok(mapToDto(profile));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<String> updateProfile(@PathVariable Long id, @RequestBody ProfileDto profileDto) {
+    public ResponseEntity<String> updateProfile(
+            @PathVariable @Positive(message = "User id must be positive") Long id,
+            @Valid @RequestBody ProfileDto profileDto
+    ) {
         Profile profile = profileRepository.findByUserId(id)
                 .orElseThrow(() -> new RuntimeException("Profile not found"));
         
@@ -58,13 +65,16 @@ public class UserController {
     }
 
     @GetMapping("/{id}/vehicles")
-    public ResponseEntity<List<Vehicle>> getUserVehicles(@PathVariable Long id) {
+    public ResponseEntity<List<Vehicle>> getUserVehicles(@PathVariable @Positive(message = "User id must be positive") Long id) {
         List<Vehicle> vehicles = vehicleRepository.findByUserId(id);
         return ResponseEntity.ok(vehicles);
     }
 
     @PostMapping("/{id}/vehicles")
-    public ResponseEntity<Vehicle> addVehicle(@PathVariable Long id, @RequestBody Vehicle vehicleDto) {
+    public ResponseEntity<Vehicle> addVehicle(
+            @PathVariable @Positive(message = "User id must be positive") Long id,
+            @Valid @RequestBody Vehicle vehicleDto
+    ) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
@@ -81,7 +91,7 @@ public class UserController {
 
     @PostMapping("/{id}/avatar")
     public ResponseEntity<User> uploadAvatar(
-            @PathVariable Long id, 
+            @PathVariable @Positive(message = "User id must be positive") Long id,
             @RequestParam("file") MultipartFile file) {
         try {
             User user = userRepository.findById(id)
@@ -101,7 +111,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     @Transactional
-    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<String> deleteUser(@PathVariable @Positive(message = "User id must be positive") Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
