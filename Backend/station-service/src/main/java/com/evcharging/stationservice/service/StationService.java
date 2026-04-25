@@ -88,6 +88,53 @@ public class StationService {
         return stations.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
+    @Transactional
+    public StationResponse updateStation(Long id, StationRequest request) {
+        Station station = stationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Station not found with id: " + id));
+
+        station.setName(request.getName());
+        station.setTotalChargers(request.getTotalChargers());
+        station.setPricingPerKwh(request.getPricingPerKwh());
+        station.setContactNumber(request.getContactNumber());
+        station.setLocation(Location.builder()
+                .address(request.getAddress())
+                .latitude(request.getLatitude())
+                .longitude(request.getLongitude())
+                .build());
+
+        chargerRepository.deleteByStationId(id);
+        if (request.getChargers() != null && !request.getChargers().isEmpty()) {
+            List<Charger> chargers = request.getChargers().stream()
+                    .map(dto -> Charger.builder()
+                            .station(station)
+                            .status(dto.getStatus() != null ? dto.getStatus() : ChargerStatus.AVAILABLE)
+                            .connectorType(dto.getConnectorType())
+                            .build())
+                    .collect(Collectors.toList());
+            chargerRepository.saveAll(chargers);
+            station.setChargers(chargers);
+        }
+
+        Availability availability = availabilityRepository.findByStationId(id)
+                .orElse(Availability.builder().stationId(id).build());
+        availability.setAvailableSlots(request.getTotalChargers());
+        availabilityRepository.save(availability);
+
+        Station updated = stationRepository.save(station);
+        return mapToResponse(updated);
+    }
+
+    @Transactional
+    public void deleteStation(Long id) {
+        Station station = stationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Station not found with id: " + id));
+
+        chargerRepository.deleteByStationId(id);
+        availabilityRepository.deleteByStationId(id);
+        stationRepository.delete(station);
+    }
+
     // ---- Mapping Helpers ----
 
     private StationResponse mapToResponse(Station station) {

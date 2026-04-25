@@ -46,6 +46,22 @@ public class StationController {
         return ResponseEntity.ok(stationService.createStation(request));
     }
 
+    @PutMapping("/{id}")
+    @Operation(summary = "Update station details", description = "Update basic station details and charger setup")
+    public ResponseEntity<StationResponse> updateStation(
+            @PathVariable Long id,
+            @RequestBody StationRequest request
+    ) {
+        return ResponseEntity.ok(stationService.updateStation(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete station", description = "Delete station and associated chargers and availability")
+    public ResponseEntity<String> deleteStation(@PathVariable Long id) {
+        stationService.deleteStation(id);
+        return ResponseEntity.ok("Station deleted successfully");
+    }
+
     @PutMapping("/{id}/availability")
     @Operation(summary = "Update availability", description = "Update the real-time availability of slots at a station")
     public ResponseEntity<Availability> updateAvailability(

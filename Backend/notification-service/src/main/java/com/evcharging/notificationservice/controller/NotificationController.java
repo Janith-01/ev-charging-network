@@ -1,61 +1,119 @@
 package com.evcharging.notificationservice.controller;
 
-import com.evcharging.notificationservice.dto.NotificationRequest;
-import com.evcharging.notificationservice.dto.NotificationResponse;
-import com.evcharging.notificationservice.service.NotificationService;
+import com.evcharging.notificationservice.config.RabbitMQConfig;
+import com.evcharging.notificationservice.dto.NotificationEvent;
+import com.evcharging.notificationservice.model.Notification;
+import com.evcharging.notificationservice.repository.NotificationRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
-@Tag(name = "Notification Controller", description = "Manage EV Charging Notifications")
+@Slf4j
+@SuppressWarnings("null")
+@Tag(name = "Notifications", description = "Notification endpoints for the React frontend")
 public class NotificationController {
 
-    private final NotificationService notificationService;
+    private final NotificationRepository notificationRepository;
+    private final RabbitTemplate rabbitTemplate;
 
-    @PostMapping("/send")
-    @Operation(summary = "Send notification",
-            description = "Manually trigger a notification (Admin/System use)")
-    public ResponseEntity<NotificationResponse> sendNotification(@RequestBody NotificationRequest request) {
-        return ResponseEntity.ok(notificationService.sendNotification(request));
-    }
-
-    @GetMapping("/user/{userId}")
-    @Operation(summary = "Get user notifications",
-            description = "Fetch all notifications for a specific user, ordered by most recent")
-    public ResponseEntity<List<NotificationResponse>> getUserNotifications(@PathVariable Long userId) {
-        return ResponseEntity.ok(notificationService.getUserNotifications(userId));
+    @GetMapping
+    @Operation(summary = "Get all notifications")
+    public ResponseEntity<List<Notification>> getAllNotifications() {
+        return ResponseEntity.ok(notificationRepository.findAll());
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get notification by ID",
-            description = "Fetch a specific notification by its ID")
-    public ResponseEntity<NotificationResponse> getNotification(@PathVariable Long id) {
-        return ResponseEntity.ok(notificationService.getNotificationById(id));
+    @Operation(summary = "Get notification by id")
+    public ResponseEntity<Notification> getNotificationById(@PathVariable Long id) {
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Notification not found with id: " + id));
+        return ResponseEntity.ok(notification);
+    }
+
+    @GetMapping("/user/{userId}")
+    @Operation(summary = "Get all notifications for a user, newest first")
+    public ResponseEntity<List<Notification>> getUserNotifications(@PathVariable Long userId) {
+        List<Notification> notifications = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        return ResponseEntity.ok(notifications);
+    }
+
+    @PostMapping
+    @Operation(summary = "Create notification directly")
+    public ResponseEntity<Notification> createNotification(@RequestBody Notification request) {
+        Notification notification = Notification.builder()
+                .userId(request.getUserId())
+                .message(request.getMessage())
+                .type(request.getType())
+                .isRead(request.getIsRead() != null ? request.getIsRead() : false)
+                .build();
+
+        return ResponseEntity.ok(notificationRepository.save(notification));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update notification")
+    public ResponseEntity<Notification> updateNotification(
+            @PathVariable Long id,
+            @RequestBody Notification request
+    ) {
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Notification not found with id: " + id));
+
+        notification.setUserId(request.getUserId());
+        notification.setMessage(request.getMessage());
+        notification.setType(request.getType());
+        if (request.getIsRead() != null) {
+            notification.setIsRead(request.getIsRead());
+        }
+
+        return ResponseEntity.ok(notificationRepository.save(notification));
     }
 
     @PutMapping("/{id}/read")
-    @Operation(summary = "Mark as read",
-            description = "Mark a specific notification as read")
-    public ResponseEntity<NotificationResponse> markAsRead(@PathVariable Long id) {
-        return ResponseEntity.ok(notificationService.markAsRead(id));
+    @Operation(summary = "Mark a notification as read")
+    public ResponseEntity<Notification> markAsRead(@PathVariable Long id) {
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Notification not found with id: " + id));
+
+        notification.setIsRead(true);
+        Notification saved = notificationRepository.save(notification);
+
+        log.info("Notification {} marked as read", id);
+        return ResponseEntity.ok(saved);
     }
 
-    @PutMapping("/user/{userId}/read-all")
-    @Operation(summary = "Mark all as read",
-            description = "Mark all notifications for a user as read")
-    public ResponseEntity<Map<String, Object>> markAllAsRead(@PathVariable Long userId) {
-        int count = notificationService.markAllAsRead(userId);
-        return ResponseEntity.ok(Map.of(
-                "message", "All notifications marked as read",
-                "count", count
-        ));
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete notification")
+    public ResponseEntity<String> deleteNotification(@PathVariable Long id) {
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Notification not found with id: " + id));
+
+        notificationRepository.delete(notification);
+        return ResponseEntity.ok("Notification deleted successfully");
+    }
+
+    @PostMapping("/test-send")
+    @Operation(summary = "Manually publish a notification event to RabbitMQ (for Swagger testing)")
+    public ResponseEntity<String> testSend(@RequestBody NotificationEvent event) {
+        String routingKey = "notification." + event.getType().name().toLowerCase();
+
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.EXCHANGE,
+                routingKey,
+                event
+        );
+
+        log.info("Test event published with routingKey: {} for userId: {}", routingKey, event.getUserId());
+        return ResponseEntity.ok("Event published to exchange '" + RabbitMQConfig.EXCHANGE
+                + "' with routingKey '" + routingKey + "'");
     }
 }

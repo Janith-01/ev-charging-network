@@ -25,6 +25,7 @@ public class BookingService {
     private final SessionRepository sessionRepository;
     private final StationServiceClient stationServiceClient;
     private final PaymentServiceClient paymentServiceClient;
+    private final NotificationPublisher notificationPublisher;
 
     // ——— Create Booking with Circuit Breaker on Station lookup ———
 
@@ -57,6 +58,7 @@ public class BookingService {
                 .build();
 
         Booking saved = bookingRepository.save(booking);
+        notificationPublisher.publishBookingConfirmed(saved.getUserId(), saved.getId(), saved.getStationId());
         return mapToResponse(saved);
     }
 
@@ -76,6 +78,10 @@ public class BookingService {
                 .build();
 
         Booking saved = bookingRepository.save(booking);
+        notificationPublisher.publishSystemAlert(
+                saved.getUserId(),
+                "Booking #" + saved.getId() + " is pending due to temporary station-service unavailability."
+        );
         return mapToResponse(saved);
     }
 
@@ -91,6 +97,35 @@ public class BookingService {
         return bookingRepository.findByUserId(userId).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+
+    public List<BookingResponse> getAllBookings() {
+        return bookingRepository.findAll().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public BookingResponse updateBooking(Long bookingId, BookingRequest request) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
+
+        booking.setUserId(request.getUserId());
+        booking.setStationId(request.getStationId());
+        booking.setChargerId(request.getChargerId());
+        booking.setDate(request.getDate());
+
+        Booking updated = bookingRepository.save(booking);
+        return mapToResponse(updated);
+    }
+
+    @Transactional
+    public void deleteBooking(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
+
+        sessionRepository.findByBookingId(bookingId).ifPresent(sessionRepository::delete);
+        bookingRepository.delete(booking);
     }
 
     // ——— Start Charging Session ———
@@ -132,6 +167,7 @@ public class BookingService {
 
         booking.setStatus(BookingStatus.CANCELLED);
         Booking saved = bookingRepository.save(booking);
+        notificationPublisher.publishBookingCancelled(saved.getUserId(), saved.getId());
         return mapToResponse(saved);
     }
 

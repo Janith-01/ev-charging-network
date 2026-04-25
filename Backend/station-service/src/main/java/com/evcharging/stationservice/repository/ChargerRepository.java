@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ChargerRepository extends JpaRepository<Charger, Long> {
     List<Charger> findByStationId(Long stationId);
+    void deleteByStationId(Long stationId);
 }

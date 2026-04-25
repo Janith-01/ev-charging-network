@@ -2,11 +2,15 @@ package com.evcharging.userservice.controller;
 
 import com.evcharging.userservice.dto.ProfileDto;
 import com.evcharging.userservice.model.Profile;
+import com.evcharging.userservice.model.User;
 import com.evcharging.userservice.model.Vehicle;
+import com.evcharging.userservice.repository.AuthTokenRepository;
 import com.evcharging.userservice.repository.ProfileRepository;
+import com.evcharging.userservice.repository.UserRepository;
 import com.evcharging.userservice.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.Base64;
@@ -21,7 +25,16 @@ public class UserController {
 
     private final ProfileRepository profileRepository;
     private final VehicleRepository vehicleRepository;
-    private final com.evcharging.userservice.repository.UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final AuthTokenRepository authTokenRepository;
+
+    @GetMapping
+    public ResponseEntity<List<ProfileDto>> getAllProfiles() {
+        List<ProfileDto> profiles = profileRepository.findAll().stream()
+                .map(this::mapToDto)
+                .toList();
+        return ResponseEntity.ok(profiles);
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProfileDto> getProfile(@PathVariable Long id) {
@@ -52,7 +65,7 @@ public class UserController {
 
     @PostMapping("/{id}/vehicles")
     public ResponseEntity<Vehicle> addVehicle(@PathVariable Long id, @RequestBody Vehicle vehicleDto) {
-        com.evcharging.userservice.model.User user = userRepository.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
         Vehicle vehicle = Vehicle.builder()
@@ -67,11 +80,11 @@ public class UserController {
     }
 
     @PostMapping("/{id}/avatar")
-    public ResponseEntity<com.evcharging.userservice.model.User> uploadAvatar(
+    public ResponseEntity<User> uploadAvatar(
             @PathVariable Long id, 
             @RequestParam("file") MultipartFile file) {
         try {
-            com.evcharging.userservice.model.User user = userRepository.findById(id)
+            User user = userRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("User not found"));
             
             String contentType = file.getContentType() != null ? file.getContentType() : "image/jpeg";
@@ -79,11 +92,25 @@ public class UserController {
                     Base64.getEncoder().encodeToString(file.getBytes());
             
             user.setProfileImageUrl(base64Image);
-            com.evcharging.userservice.model.User updatedUser = userRepository.save(user);
+            User updatedUser = userRepository.save(user);
             return ResponseEntity.ok(updatedUser);
         } catch (Exception e) {
             throw new RuntimeException("Failed to upload avatar: " + e.getMessage());
         }
+    }
+
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        authTokenRepository.deleteByUser_Id(id);
+        vehicleRepository.deleteByUserId(id);
+        profileRepository.deleteByUserId(id);
+        userRepository.delete(user);
+
+        return ResponseEntity.ok("User deleted successfully");
     }
     
     private ProfileDto mapToDto(Profile profile) {

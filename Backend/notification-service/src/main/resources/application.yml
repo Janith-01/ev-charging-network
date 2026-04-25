@@ -17,36 +17,15 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-  # RabbitMQ Configuration
+  # RabbitMQ
   rabbitmq:
     host: localhost
     port: 5672
     username: guest
     password: guest
 
-  # Mail Configuration (simulated — use MailHog or Mailtrap for local dev)
-  mail:
-    host: localhost
-    port: 1025
-    properties:
-      mail:
-        smtp:
-          auth: false
-          starttls:
-            enable: false
-
 jwt:
   secret: a2b4c6e8f01a3b5d7e9f1h3j5k7m9n1p2r4t6v8x0z2y4w6q8s0u2i4o6p8l0k2m4n
-
-# RabbitMQ Queue/Exchange names
-rabbitmq:
-  exchange: ev-charging-exchange
-  queues:
-    booking-confirmed: booking_confirmed_queue
-    payment-completed: payment_completed_queue
-  routing-keys:
-    booking-confirmed: booking.confirmed
-    payment-completed: payment.completed
 
 springdoc:
   swagger-ui:

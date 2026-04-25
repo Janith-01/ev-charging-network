@@ -6,19 +6,19 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: postgres            # default DB created on init
+      POSTGRES_DB: postgres
     ports:
       - "5432:5432"
     volumes:
-      # Persistent data — survives container restarts
       - ./postgres-data:/var/lib/postgresql/data
-      # Init script — runs only on FIRST startup (empty data dir)
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - ev-network
 
   redis:
     image: redis:7-alpine
@@ -31,6 +31,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - ev-network
 
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
@@ -40,13 +42,15 @@ services:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
     ports:
-      - "5672:5672"       # AMQP protocol
-      - "15672:15672"     # Management UI (http://localhost:15672)
+      - "5672:5672"
+      - "15672:15672"
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - ev-network
 
   mailhog:
     image: mailhog/mailhog:v1.0.1
@@ -54,6 +58,8 @@ services:
     ports:
       - "1025:1025"
       - "8025:8025"
+    networks:
+      - ev-network
 
   station-service:
     build: ./Backend/station-service
@@ -66,6 +72,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - ev-network
 
   user-service:
     build: ./Backend/user-service
@@ -78,6 +86,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - ev-network
 
   booking-service:
     build: ./Backend/booking-service
@@ -87,11 +97,18 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/bookings_db
       FEIGN_STATION_SERVICE_URL: http://station-service:8081
       FEIGN_PAYMENT_SERVICE_URL: http://payment-service:8084
+      SPRING_RABBITMQ_HOST: rabbitmq
     ports:
       - "8083:8083"
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      station-service:
+        condition: service_started
+    networks:
+      - ev-network
 
   payment-service:
     build: ./Backend/payment-service
@@ -100,11 +117,16 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/payments_db
       FEIGN_BOOKING_SERVICE_URL: http://booking-service:8083
+      SPRING_RABBITMQ_HOST: rabbitmq
     ports:
       - "8084:8084"
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - ev-network
 
   notification-service:
     build: ./Backend/notification-service
@@ -121,19 +143,32 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      mailhog:
+        condition: service_started
+    networks:
+      - ev-network
 
   api-gateway:
     build: ./Backend/api-gateway
     container_name: ev-charging-gateway
     restart: unless-stopped
     environment:
-      SPRING_CLOUD_GATEWAY_ROUTES_0_URI: http://station-service:8081
-      SPRING_CLOUD_GATEWAY_ROUTES_1_URI: http://user-service:8082
-      SPRING_CLOUD_GATEWAY_ROUTES_2_URI: http://booking-service:8083
-      SPRING_CLOUD_GATEWAY_ROUTES_3_URI: http://payment-service:8084
-      SPRING_CLOUD_GATEWAY_ROUTES_4_URI: http://notification-service:8085
+      SPRING_PROFILES_ACTIVE: docker
     ports:
       - "8080:8080"
+    depends_on:
+      station-service:
+        condition: service_started
+      user-service:
+        condition: service_started
+      booking-service:
+        condition: service_started
+      payment-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
+    networks:
+      - ev-network
 
   frontend:
     build: ./Frontend
@@ -141,3 +176,12 @@ services:
     restart: unless-stopped
     ports:
       - "3000:80"
+    depends_on:
+      api-gateway:
+        condition: service_started
+    networks:
+      - ev-network
+
+networks:
+  ev-network:
+    driver: bridge

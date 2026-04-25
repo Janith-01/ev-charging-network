@@ -5,7 +5,6 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -13,59 +12,35 @@ import org.springframework.context.annotation.Configuration;
 @SuppressWarnings("null")
 public class RabbitMQConfig {
 
-    @Value("${rabbitmq.exchange}")
-    private String exchange;
+    public static final String QUEUE = "notification_queue";
+    public static final String EXCHANGE = "ev_exchange";
+    public static final String ROUTING_KEY = "notification.#";
 
-    @Value("${rabbitmq.queues.booking-confirmed}")
-    private String bookingConfirmedQueue;
+    // ——— Queue ———
 
-    @Value("${rabbitmq.queues.payment-completed}")
-    private String paymentCompletedQueue;
-
-    @Value("${rabbitmq.routing-keys.booking-confirmed}")
-    private String bookingConfirmedRoutingKey;
-
-    @Value("${rabbitmq.routing-keys.payment-completed}")
-    private String paymentCompletedRoutingKey;
+    @Bean
+    public Queue notificationQueue() {
+        return QueueBuilder.durable(QUEUE).build();
+    }
 
     // ——— Exchange ———
 
     @Bean
-    public TopicExchange evChargingExchange() {
-        return new TopicExchange(exchange);
+    public TopicExchange evExchange() {
+        return new TopicExchange(EXCHANGE);
     }
 
-    // ——— Queues ———
+    // ——— Binding: notification.# → notification_queue ———
 
     @Bean
-    public Queue bookingConfirmedQueue() {
-        return QueueBuilder.durable(bookingConfirmedQueue).build();
-    }
-
-    @Bean
-    public Queue paymentCompletedQueue() {
-        return QueueBuilder.durable(paymentCompletedQueue).build();
-    }
-
-    // ——— Bindings ———
-
-    @Bean
-    public Binding bookingConfirmedBinding() {
+    public Binding notificationBinding(Queue notificationQueue, TopicExchange evExchange) {
         return BindingBuilder
-                .bind(bookingConfirmedQueue())
-                .to(evChargingExchange())
-                .with(bookingConfirmedRoutingKey);
+                .bind(notificationQueue)
+                .to(evExchange)
+                .with(ROUTING_KEY);
     }
 
-    @Bean
-    public Binding paymentCompletedBinding() {
-        return BindingBuilder
-                .bind(paymentCompletedQueue())
-                .to(evChargingExchange())
-                .with(paymentCompletedRoutingKey);
-    }
-
-    // ——— JSON Message Converter ———
+    // ——— JSON Serialization ———
 
     @Bean
     public MessageConverter jsonMessageConverter() {

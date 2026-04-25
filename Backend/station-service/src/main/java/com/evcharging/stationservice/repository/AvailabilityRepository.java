@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface AvailabilityRepository extends JpaRepository<Availability, Long> {
     Optional<Availability> findByStationId(Long stationId);
+    void deleteByStationId(Long stationId);
 }

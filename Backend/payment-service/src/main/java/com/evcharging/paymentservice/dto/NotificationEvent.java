@@ -1,14 +1,9 @@
-package com.evcharging.notificationservice.dto;
+package com.evcharging.paymentservice.dto;
 
-import com.evcharging.notificationservice.model.NotificationType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * DTO carried through RabbitMQ messages.
- * Producers (booking-service, payment-service, etc.) publish this to the exchange.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

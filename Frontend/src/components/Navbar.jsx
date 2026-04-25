@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { authService } from '../services/authService'
 import { apiService } from '../services/apiService'
-import { Bell, User, LogOut, Menu, X, Car, Map as MapIcon, FileText } from 'lucide-react'
+import { User, LogOut, Menu, X, Car, Map as MapIcon, FileText } from 'lucide-react'
+import NotificationBell from './NotificationBell'
 
 // Hook for clicking outside dropdown
 function useOnClickOutside(ref, handler) {
@@ -36,7 +37,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
-  const [hasNotifications, setHasNotifications] = useState(true)
+
 
   const profileRef = useRef()
   useOnClickOutside(profileRef, () => setProfileOpen(false))
@@ -124,12 +125,7 @@ export default function Navbar() {
             {isAuthenticated ? (
               <>
                 {/* Notification Bell */}
-                <button className="relative p-2 text-slate-400 hover:text-white transition-colors">
-                  <Bell className="w-5 h-5" />
-                  {hasNotifications && (
-                    <span className="absolute top-1 right-2 w-2 h-2 rounded-full bg-red-500 ring-2 ring-slate-950" />
-                  )}
-                </button>
+                <NotificationBell />
 
                 {/* Profile Dropdown */}
                 <div className="relative" ref={profileRef}>
@@ -196,10 +192,7 @@ export default function Navbar() {
           {/* Mobile Menu Toggle */}
           <div className="md:hidden flex items-center gap-4">
             {isAuthenticated && (
-              <button className="relative p-1 text-slate-400">
-                 <Bell className="w-5 h-5" />
-                 {hasNotifications && <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 ring-2 ring-slate-950" />}
-              </button>
+              <NotificationBell />
             )}
             <button 
               onClick={() => setMobileOpen(!mobileOpen)}

@@ -25,6 +25,7 @@ public class PaymentService {
     private final TransactionRepository transactionRepository;
     private final RefundRepository refundRepository;
     private final BookingServiceClient bookingServiceClient;
+    private final NotificationPublisher notificationPublisher;
 
     // ——— Process Payment ———
 
@@ -85,6 +86,12 @@ public class PaymentService {
         log.info("Payment processed — paymentId: {}, amount: {}, txn: {}",
                 savedPayment.getId(), amount, gatewayRef);
 
+        notificationPublisher.publishPaymentSuccess(
+                request.getUserId(),
+                request.getBookingId(),
+                savedPayment.getAmount()
+        );
+
         return buildResponse(savedPayment, savedInvoice, savedTxn);
     }
 
@@ -136,6 +143,12 @@ public class PaymentService {
 
         log.info("Refund processed — paymentId: {}, refundAmount: {}", paymentId, request.getRefundAmount());
 
+        notificationPublisher.publishPaymentRefunded(
+                payment.getUserId(),
+                paymentId,
+                request.getRefundAmount()
+        );
+
         return refundRepository.save(refund);
     }
 
@@ -149,6 +162,43 @@ public class PaymentService {
                     return buildResponse(payment, invoice, txn);
                 })
                 .collect(Collectors.toList());
+    }
+
+    public List<PaymentResponse> getAllPayments() {
+        return paymentRepository.findAll().stream()
+                .map(payment -> {
+                    Invoice invoice = invoiceRepository.findByPaymentId(payment.getId()).orElse(null);
+                    Transaction txn = transactionRepository.findByPaymentId(payment.getId()).orElse(null);
+                    return buildResponse(payment, invoice, txn);
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public PaymentResponse updatePayment(Long paymentId, Payment request) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new RuntimeException("Payment not found with id: " + paymentId));
+
+        payment.setUserId(request.getUserId());
+        payment.setAmount(request.getAmount());
+        payment.setStatus(request.getStatus() != null ? request.getStatus() : payment.getStatus());
+
+        Payment updated = paymentRepository.save(payment);
+        Invoice invoice = invoiceRepository.findByPaymentId(paymentId).orElse(null);
+        Transaction txn = transactionRepository.findByPaymentId(paymentId).orElse(null);
+
+        return buildResponse(updated, invoice, txn);
+    }
+
+    @Transactional
+    public void deletePayment(Long paymentId) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new RuntimeException("Payment not found with id: " + paymentId));
+
+        refundRepository.deleteByPaymentId(paymentId);
+        transactionRepository.deleteByPaymentId(paymentId);
+        invoiceRepository.deleteByPaymentId(paymentId);
+        paymentRepository.delete(payment);
     }
 
     // ——— Response Builder ———

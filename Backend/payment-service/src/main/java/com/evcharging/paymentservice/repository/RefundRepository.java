@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface RefundRepository extends JpaRepository<Refund, Long> {
     List<Refund> findByPaymentId(Long paymentId);
+    void deleteByPaymentId(Long paymentId);
 }

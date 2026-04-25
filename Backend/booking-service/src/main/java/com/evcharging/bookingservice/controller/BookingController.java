@@ -27,6 +27,12 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.createBooking(request));
     }
 
+    @GetMapping
+    @Operation(summary = "Get all bookings", description = "Fetch all bookings in the system")
+    public ResponseEntity<List<BookingResponse>> getAllBookings() {
+        return ResponseEntity.ok(bookingService.getAllBookings());
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Get booking details", description = "Fetch booking details by booking ID")
     public ResponseEntity<BookingResponse> getBooking(@PathVariable Long id) {
@@ -37,6 +43,22 @@ public class BookingController {
     @Operation(summary = "Get user bookings", description = "Fetch all bookings for a specific user")
     public ResponseEntity<List<BookingResponse>> getUserBookings(@PathVariable Long userId) {
         return ResponseEntity.ok(bookingService.getBookingsByUserId(userId));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update booking", description = "Update booking details by booking ID")
+    public ResponseEntity<BookingResponse> updateBooking(
+            @PathVariable Long id,
+            @RequestBody BookingRequest request
+    ) {
+        return ResponseEntity.ok(bookingService.updateBooking(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete booking", description = "Delete booking and linked charging session if present")
+    public ResponseEntity<String> deleteBooking(@PathVariable Long id) {
+        bookingService.deleteBooking(id);
+        return ResponseEntity.ok("Booking deleted successfully");
     }
 
     @PutMapping("/{id}/start")

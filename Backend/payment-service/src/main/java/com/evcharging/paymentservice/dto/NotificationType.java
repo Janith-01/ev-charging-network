@@ -1,4 +1,4 @@
-package com.evcharging.notificationservice.model;
+package com.evcharging.paymentservice.dto;
 
 public enum NotificationType {
     BOOKING_CONFIRMED,

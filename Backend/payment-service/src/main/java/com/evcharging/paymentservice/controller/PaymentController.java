@@ -3,6 +3,7 @@ package com.evcharging.paymentservice.controller;
 import com.evcharging.paymentservice.dto.PaymentRequest;
 import com.evcharging.paymentservice.dto.PaymentResponse;
 import com.evcharging.paymentservice.dto.RefundRequest;
+import com.evcharging.paymentservice.model.Payment;
 import com.evcharging.paymentservice.model.Refund;
 import com.evcharging.paymentservice.service.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,6 +27,12 @@ public class PaymentController {
             description = "Triggered by the Booking Service. Creates Payment, Invoice, and Transaction records.")
     public ResponseEntity<PaymentResponse> processPayment(@RequestBody PaymentRequest request) {
         return ResponseEntity.ok(paymentService.processPayment(request));
+    }
+
+    @GetMapping
+    @Operation(summary = "Get all payments", description = "Fetch all payment records")
+    public ResponseEntity<List<PaymentResponse>> getAllPayments() {
+        return ResponseEntity.ok(paymentService.getAllPayments());
     }
 
     @GetMapping("/{id}")
@@ -56,5 +63,21 @@ public class PaymentController {
             description = "Fetch the complete payment ledger for a user")
     public ResponseEntity<List<PaymentResponse>> getPaymentHistory(@PathVariable Long userId) {
         return ResponseEntity.ok(paymentService.getPaymentHistory(userId));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update payment", description = "Update a payment record")
+    public ResponseEntity<PaymentResponse> updatePayment(
+            @PathVariable Long id,
+            @RequestBody Payment request
+    ) {
+        return ResponseEntity.ok(paymentService.updatePayment(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete payment", description = "Delete payment and its related invoice, transactions, and refunds")
+    public ResponseEntity<String> deletePayment(@PathVariable Long id) {
+        paymentService.deletePayment(id);
+        return ResponseEntity.ok("Payment deleted successfully");
     }
 }

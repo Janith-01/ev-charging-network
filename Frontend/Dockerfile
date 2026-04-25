@@ -1,24 +1,18 @@
 FROM node:18-alpine AS builder
 WORKDIR /app
+
 COPY package*.json ./
-RUN npm install
+RUN npm ci
+
 COPY . .
 RUN npm run build
 
-FROM nginx:alpine
+FROM nginx:1.27-alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
-RUN echo "server { \
-    listen       80; \
-    server_name  localhost; \
-    location / { \
-        root   /usr/share/nginx/html; \
-        index  index.html index.htm; \
-        try_files \$uri \$uri/ /index.html; \
-    } \
-    error_page   500 502 503 504  /50x.html; \
-    location = /50x.html { \
-        root   /usr/share/nginx/html; \
-    } \
-}" > /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 EXPOSE 80
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD wget -qO- http://localhost:80/ >/dev/null || exit 1
+
 CMD ["nginx", "-g", "daemon off;"]
